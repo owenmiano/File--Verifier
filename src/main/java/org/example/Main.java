@@ -5,6 +5,7 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 import java.io.*;
 import java.util.regex.Pattern;
+import java.util.Arrays;
 
 public class Main {
 
@@ -14,6 +15,7 @@ public class Main {
 
     private static final String[] HEADER_COLUMNS = {"ID Number", "Name", "Phone Number", "Email", "Gender"};
 
+    private static final String[] HEADER_COLUMNS_WITH_ERRORS = {"ID Number", "Name", "Phone Number", "Email", "Gender", "Errors"};
     public static void main(String[] args) {
         long programStartTime = System.currentTimeMillis();
         try {
@@ -39,7 +41,7 @@ public class Main {
             createHeaderRow(femaleSheet, HEADER_COLUMNS);
 
             Sheet invalidSheet = workbook.createSheet("Invalid Records");
-            createHeaderRow(invalidSheet, HEADER_COLUMNS);
+            createHeaderRow(invalidSheet, HEADER_COLUMNS_WITH_ERRORS);
 
             String line;
             int count = 1;
@@ -47,26 +49,47 @@ public class Main {
             while ((line = reader.readLine()) != null) {
                 String[] columns = line.split(",");
 
-                if (columns.length == 5) {
-                    String idNumber = columns[0].trim();
-                    String mobileNumber = columns[2].trim();
-                    String email = columns[3].trim();
-                    String gender = columns[4].trim();
+                String idNumber = columns[0].trim();
+                String mobileNumber = columns[2].trim();
+                String email = columns[3].trim();
+                String gender = columns[4].trim();
 
-                    if (isValid(idNumber) && isValidMobileNumber(mobileNumber) && isValidEmail(email)) {
-                        Sheet targetSheet;
-                        if ("Male".equalsIgnoreCase(gender)) {
-                            targetSheet = maleSheet;
-                        } else if ("Female".equalsIgnoreCase(gender)) {
-                            targetSheet = femaleSheet;
-                        } else {
-                            targetSheet = invalidSheet;
-                        }
-                        createDataRow(targetSheet, columns);
-                    } else {
-                        createDataRow(invalidSheet, columns);
-                    }
+                StringBuilder errors = new StringBuilder();
+
+                if (!isValid(idNumber)) {
+                    errors.append("Invalid ID Number, ");
                 }
+
+                if (!isValidMobileNumber(mobileNumber)) {
+                    errors.append("Invalid Phone Number, ");
+                }
+
+                if (!isValidEmail(email)) {
+                    errors.append("Invalid Email, ");
+                }
+
+                if (!errors.isEmpty()) {
+                    // Remove the trailing comma and space
+                    errors.setLength(errors.length() - 2);
+                    if (columns.length < 6) {
+                        columns = Arrays.copyOf(columns, 6);
+                    }
+
+                    columns[5] = errors.toString();
+                    createDataRow(invalidSheet, columns);
+                } else {
+                    // No errors, process as valid
+                    Sheet targetSheet;
+                    if ("Male".equalsIgnoreCase(gender)) {
+                        targetSheet = maleSheet;
+                    } else if ("Female".equalsIgnoreCase(gender)) {
+                        targetSheet = femaleSheet;
+                    } else {
+                        targetSheet = invalidSheet;
+                    }
+                    createDataRow(targetSheet, columns);
+                }
+
                 System.out.println("counting " + count);
                 count++;
             }
