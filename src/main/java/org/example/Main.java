@@ -13,6 +13,7 @@ public class Main {
     private static final String CSV_FILE_PATH = "C:\\Users\\Home\\Downloads\\member_details.csv";
     private static final String EXCEL_FILE_PATH = "C:\\Users\\Home\\Downloads\\sanitized.xlsx";
 
+//    to be included in the invalid records
     private static final String[] HEADER_COLUMNS = {"ID Number", "Name", "Phone Number", "Email", "Gender"};
 
     private static final String[] HEADER_COLUMNS_WITH_ERRORS = {"ID Number", "Name", "Phone Number", "Email", "Gender", "Errors"};
